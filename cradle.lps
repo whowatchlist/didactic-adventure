@@ -9,16 +9,32 @@
         <Filename Value="cradle.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="264"/>
-        <CursorPos X="39" Y="294"/>
+        <TopLine Value="280"/>
+        <CursorPos X="65" Y="333"/>
         <UsageCount Value="20"/>
         <Loaded Value="True"/>
       </Unit>
     </Units>
-    <JumpHistory>
+    <JumpHistory HistoryIndex="4">
       <Position>
         <Filename Value="cradle.lpr"/>
         <Caret Line="200" Column="7" TopLine="177"/>
+      </Position>
+      <Position>
+        <Filename Value="cradle.lpr"/>
+        <Caret Line="110" Column="64" TopLine="91"/>
+      </Position>
+      <Position>
+        <Filename Value="cradle.lpr"/>
+        <Caret Line="160" Column="17" TopLine="138"/>
+      </Position>
+      <Position>
+        <Filename Value="cradle.lpr"/>
+        <Caret Line="292" Column="17" TopLine="278"/>
+      </Position>
+      <Position>
+        <Filename Value="cradle.lpr"/>
+        <Caret Line="305" Column="65" TopLine="278"/>
       </Position>
     </JumpHistory>
     <RunParams>

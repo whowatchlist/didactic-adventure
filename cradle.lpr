@@ -1,6 +1,5 @@
-
 {--------------------------------------------------------------}
-program cradle;
+program parse;
 
   {--------------------------------------------------------------}
   { Constant Declarations }
@@ -32,7 +31,6 @@ var
     WriteLn(^G, 'Error: ', s, '.');
   end;
 
-
   {--------------------------------------------------------------}
   { Report Error and Halt }
 
@@ -51,27 +49,17 @@ var
     Abort(s + ' Expected');
   end;
 
-  {--------------------------------------------------------------}
-  { Match a Specific Input Character }
-
-  procedure Match(x: char);
-  begin
-    if Look = x then GetChar
-    else
-      Expected('''' + x + '''');
-  end;
-
 
   {--------------------------------------------------------------}
   { Recognize an Alpha Character }
 
   function IsAlpha(c: char): boolean;
   begin
-    IsAlpha := upcase(c) in ['A'..'Z'];
+    IsAlpha := UpCase(c) in ['A'..'Z'];
   end;
 
-  {--------------------------------------------------------------}
 
+  {--------------------------------------------------------------}
   { Recognize a Decimal Digit }
 
   function IsDigit(c: char): boolean;
@@ -81,24 +69,90 @@ var
 
 
   {--------------------------------------------------------------}
+  { Recognize an Alphanumeric }
+
+  function IsAlNum(c: char): boolean;
+  begin
+    IsAlNum := IsAlpha(c) or IsDigit(c);
+  end;
+
+
+  {--------------------------------------------------------------}
+  { Recognize an Addop }
+
+  function IsAddop(c: char): boolean;
+  begin
+    IsAddop := c in ['+', '-'];
+  end;
+
+  {--------------------------------------------------------------}
+  { Recognize White Space }
+
+  function IsWhite(c: char): boolean;
+  begin
+    IsWhite := c in [' ', TAB];
+  end;
+
+
+  {--------------------------------------------------------------}
+  { Skip Over Leading White Space }
+
+  procedure SkipWhite;
+  begin
+    while IsWhite(Look) do
+      GetChar;
+  end;
+
+
+  {--------------------------------------------------------------}
+  { Match a Specific Input Character }
+
+  procedure Match(x: char);
+  begin
+    if Look <> x then Expected('''' + x + '''')
+    else
+    begin
+      GetChar;
+      SkipWhite;
+    end;
+  end;
+
+
+  {--------------------------------------------------------------}
   { Get an Identifier }
 
-  function GetName: char;
+  function GetName: string;
+  var
+    Token: string;
   begin
+    Token := '';
     if not IsAlpha(Look) then Expected('Name');
-    GetName := UpCase(Look);
-    GetChar;
+    while IsAlNum(Look) do
+    begin
+      Token := Token + UpCase(Look);
+      GetChar;
+    end;
+    GetName := Token;
+    SkipWhite;
   end;
 
 
   {--------------------------------------------------------------}
   { Get a Number }
 
-  function GetNum: char;
+  function GetNum: string;
+  var
+    Value: string;
   begin
+    Value := '';
     if not IsDigit(Look) then Expected('Integer');
-    GetNum := Look;
-    GetChar;
+    while IsDigit(Look) do
+    begin
+      Value := Value + Look;
+      GetChar;
+    end;
+    GetNum := Value;
+    SkipWhite;
   end;
 
 
@@ -120,30 +174,13 @@ var
     WriteLn;
   end;
 
-  {--------------------------------------------------------------}
-  { Initialize }
-
-  procedure Init;
-  begin
-    GetChar;
-  end;
-
-  {--------------------------------------------------------------}
-  { Recognize an Addop }
-
-  function IsAddop(c: char): boolean;
-  begin
-    IsAddop := c in ['+', '-'];
-  end;
-
-  {--------------------------------------------------------------}
 
   {---------------------------------------------------------------}
-  { Parse and Translate an Identifier }
+  { Parse and Translate a Identifier }
 
   procedure Ident;
   var
-    Name: char;
+    Name: string[8];
   begin
     Name := GetName;
     if Look = '(' then
@@ -156,7 +193,6 @@ var
       EmitLn('MOVE ' + Name + '(PC),D0');
   end;
 
-  {---------------------------------------------------------------}
 
   {---------------------------------------------------------------}
   { Parse and Translate a Math Factor }
@@ -176,10 +212,6 @@ var
     else
       EmitLn('MOVE #' + GetNum + ',D0');
   end;
-
-  {--------------------------------------------------------------}
-
-
 
 
   {--------------------------------------------------------------}
@@ -201,6 +233,7 @@ var
     Match('/');
     Factor;
     EmitLn('MOVE (SP)+,D1');
+    EmitLn('EXS.L D0');
     EmitLn('DIVS D1,D0');
   end;
 
@@ -217,8 +250,6 @@ var
       case Look of
         '*': Multiply;
         '/': Divide;
-        else
-          Expected('Mulop');
       end;
     end;
   end;
@@ -262,20 +293,17 @@ var
       case Look of
         '+': Add;
         '-': Subtract;
-        else
-          Expected('Addop');
       end;
     end;
   end;
 
-  {--------------------------------------------------------------}
 
   {--------------------------------------------------------------}
   { Parse and Translate an Assignment Statement }
 
   procedure Assignment;
   var
-    Name: char;
+    Name: string[8];
   begin
     Name := GetName;
     Match('=');
@@ -285,6 +313,13 @@ var
   end;
 
   {--------------------------------------------------------------}
+  { Initialize }
+
+  procedure Init;
+  begin
+    GetChar;
+    SkipWhite;
+  end;
 
 
   {--------------------------------------------------------------}
@@ -293,6 +328,6 @@ var
 begin
   Init;
   Assignment;
-  if Look <> CR then Expected('Newline');
+  if Look <> CR then Expected('NewLine');
 end.
 {--------------------------------------------------------------}
