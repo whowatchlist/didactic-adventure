@@ -7,6 +7,7 @@ program cradle;
 
 const
   TAB = ^I;
+  CR = ^M;
 
   {--------------------------------------------------------------}
   { Variable Declarations }
@@ -138,6 +139,26 @@ var
   {--------------------------------------------------------------}
 
   {---------------------------------------------------------------}
+  { Parse and Translate an Identifier }
+
+  procedure Ident;
+  var
+    Name: char;
+  begin
+    Name := GetName;
+    if Look = '(' then
+    begin
+      Match('(');
+      Match(')');
+      EmitLn('BSR ' + Name);
+    end
+    else
+      EmitLn('MOVE ' + Name + '(PC),D0');
+  end;
+
+  {---------------------------------------------------------------}
+
+  {---------------------------------------------------------------}
   { Parse and Translate a Math Factor }
 
   procedure Expression; forward;
@@ -150,11 +171,15 @@ var
       Expression;
       Match(')');
     end
+    else if IsAlpha(Look) then
+      Ident
     else
       EmitLn('MOVE #' + GetNum + ',D0');
   end;
 
   {--------------------------------------------------------------}
+
+
 
 
   {--------------------------------------------------------------}
@@ -245,12 +270,29 @@ var
 
   {--------------------------------------------------------------}
 
+  {--------------------------------------------------------------}
+  { Parse and Translate an Assignment Statement }
+
+  procedure Assignment;
+  var
+    Name: char;
+  begin
+    Name := GetName;
+    Match('=');
+    Expression;
+    EmitLn('LEA ' + Name + '(PC),A0');
+    EmitLn('MOVE D0,(A0)');
+  end;
+
+  {--------------------------------------------------------------}
+
 
   {--------------------------------------------------------------}
   { Main Program }
 
 begin
   Init;
-  Expression;
+  Assignment;
+  if Look <> CR then Expected('Newline');
 end.
 {--------------------------------------------------------------}
