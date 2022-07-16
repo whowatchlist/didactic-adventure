@@ -81,6 +81,16 @@ var
 
 
   {--------------------------------------------------------------}
+  { Recognize an Alphanumeric }
+
+  function IsAlNum(c: char): boolean;
+  begin
+    IsAlNum := IsAlpha(c) or IsDigit(c);
+  end;
+
+  {--------------------------------------------------------------}
+
+  {--------------------------------------------------------------}
   { Get an Identifier }
 
   function GetName: char;
