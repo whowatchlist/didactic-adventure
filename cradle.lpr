@@ -93,12 +93,14 @@ var
   {--------------------------------------------------------------}
   { Get a Number }
 
-  function GetNum: char;
+  function GetNum: integer;
   begin
     if not IsDigit(Look) then Expected('Integer');
-    GetNum := Look;
+    GetNum := Ord(Look) - Ord('0');
     GetChar;
   end;
+
+  {--------------------------------------------------------------}
 
 
   {--------------------------------------------------------------}
@@ -129,11 +131,40 @@ var
     GetChar;
   end;
 
+  {---------------------------------------------------------------}
+  { Parse and Translate an Expression }
+
+  function Expression: integer;
+  var
+    Value: integer;
+  begin
+    if IsAddop(Look) then
+      Value := 0
+    else
+      Value := GetNum;
+    while IsAddop(Look) do
+    begin
+      case Look of
+        '+': begin
+          Match('+');
+          Value := Value + GetNum;
+        end;
+        '-': begin
+          Match('-');
+          Value := Value - GetNum;
+        end;
+      end;
+    end;
+    Expression := Value;
+  end;
+
+  {--------------------------------------------------------------}
 
   {--------------------------------------------------------------}
   { Main Program }
 
 begin
   Init;
+  Writeln(Expression);
 end.
 {--------------------------------------------------------------}
