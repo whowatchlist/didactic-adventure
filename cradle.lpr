@@ -1,19 +1,18 @@
 
 {--------------------------------------------------------------}
-program cradle;
+program Cradle;
 
   {--------------------------------------------------------------}
   { Constant Declarations }
 
 const
   TAB = ^I;
-  CR = ^M;
 
   {--------------------------------------------------------------}
   { Variable Declarations }
 
 var
-  Look: char; { Lookahead Character }
+  Look: char;              { Lookahead Character }
 
   {--------------------------------------------------------------}
   { Read New Character From Input Stream }
@@ -70,6 +69,7 @@ var
     IsAlpha := upcase(c) in ['A'..'Z'];
   end;
 
+
   {--------------------------------------------------------------}
 
   { Recognize a Decimal Digit }
@@ -79,16 +79,6 @@ var
     IsDigit := c in ['0'..'9'];
   end;
 
-
-  {--------------------------------------------------------------}
-  { Recognize an Alphanumeric }
-
-  function IsAlNum(c: char): boolean;
-  begin
-    IsAlNum := IsAlpha(c) or IsDigit(c);
-  end;
-
-  {--------------------------------------------------------------}
 
   {--------------------------------------------------------------}
   { Get an Identifier }
@@ -121,6 +111,8 @@ var
   end;
 
 
+
+
   {--------------------------------------------------------------}
   { Output a String with Tab and CRLF }
 
@@ -138,171 +130,11 @@ var
     GetChar;
   end;
 
-  {--------------------------------------------------------------}
-  { Recognize an Addop }
-
-  function IsAddop(c: char): boolean;
-  begin
-    IsAddop := c in ['+', '-'];
-  end;
-
-  {--------------------------------------------------------------}
-
-  {---------------------------------------------------------------}
-  { Parse and Translate an Identifier }
-
-  procedure Ident;
-  var
-    Name: char;
-  begin
-    Name := GetName;
-    if Look = '(' then
-    begin
-      Match('(');
-      Match(')');
-      EmitLn('BSR ' + Name);
-    end
-    else
-      EmitLn('MOVE ' + Name + '(PC),D0');
-  end;
-
-  {---------------------------------------------------------------}
-
-  {---------------------------------------------------------------}
-  { Parse and Translate a Math Factor }
-
-  procedure Expression; forward;
-
-  procedure Factor;
-  begin
-    if Look = '(' then
-    begin
-      Match('(');
-      Expression;
-      Match(')');
-    end
-    else if IsAlpha(Look) then
-      Ident
-    else
-      EmitLn('MOVE #' + GetNum + ',D0');
-  end;
-
-  {--------------------------------------------------------------}
-
-
-
-
-  {--------------------------------------------------------------}
-  { Recognize and Translate a Multiply }
-
-  procedure Multiply;
-  begin
-    Match('*');
-    Factor;
-    EmitLn('MULS (SP)+,D0');
-  end;
-
-
-  {-------------------------------------------------------------}
-  { Recognize and Translate a Divide }
-
-  procedure Divide;
-  begin
-    Match('/');
-    Factor;
-    EmitLn('MOVE (SP)+,D1');
-    EmitLn('DIVS D1,D0');
-  end;
-
-
-  {---------------------------------------------------------------}
-  { Parse and Translate a Math Term }
-
-  procedure Term;
-  begin
-    Factor;
-    while Look in ['*', '/'] do
-    begin
-      EmitLn('MOVE D0,-(SP)');
-      case Look of
-        '*': Multiply;
-        '/': Divide;
-        else
-          Expected('Mulop');
-      end;
-    end;
-  end;
-
-
-  {--------------------------------------------------------------}
-  { Recognize and Translate an Add }
-
-  procedure Add;
-  begin
-    Match('+');
-    Term;
-    EmitLn('ADD (SP)+,D0');
-  end;
-
-
-  {-------------------------------------------------------------}
-  { Recognize and Translate a Subtract }
-
-  procedure Subtract;
-  begin
-    Match('-');
-    Term;
-    EmitLn('SUB (SP)+,D0');
-    EmitLn('NEG D0');
-  end;
-
-
-  {---------------------------------------------------------------}
-  { Parse and Translate an Expression }
-
-  procedure Expression;
-  begin
-    if IsAddop(Look) then
-      EmitLn('CLR D0')
-    else
-      Term;
-    while IsAddop(Look) do
-    begin
-      EmitLn('MOVE D0,-(SP)');
-      case Look of
-        '+': Add;
-        '-': Subtract;
-        else
-          Expected('Addop');
-      end;
-    end;
-  end;
-
-  {--------------------------------------------------------------}
-
-  {--------------------------------------------------------------}
-  { Parse and Translate an Assignment Statement }
-
-  procedure Assignment;
-  var
-    Name: char;
-  begin
-    Name := GetName;
-    Match('=');
-    Expression;
-    EmitLn('LEA ' + Name + '(PC),A0');
-    EmitLn('MOVE D0,(A0)');
-  end;
-
-  {--------------------------------------------------------------}
-
 
   {--------------------------------------------------------------}
   { Main Program }
 
 begin
   Init;
-  Assignment;
-  if Look <> CR then Expected('Newline');
 end.
 {--------------------------------------------------------------}
